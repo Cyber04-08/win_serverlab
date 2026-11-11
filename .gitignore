@@ -1,0 +1,20 @@
+﻿# Virtual disks and ISOs
+*.vhd
+*.vhdx
+*.avhdx
+*.iso
+*.wim
+
+# Secrets
+*.pfx
+*.key
+*.pem
+*.env
+secrets*
+*.rdp
+
+# OS / editor
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
