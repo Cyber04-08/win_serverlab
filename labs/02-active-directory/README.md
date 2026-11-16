@@ -59,6 +59,7 @@ Adapter 1 is NAT for internet. Adapter 2 is an Internal Network named `labnet` f
 - Built the other four clients by cloning a freshly installed Windows 11 VM that had only the local account name and the `labnet` adapter configured. The source VM was fully shut down first. Each clone was a Full Clone of the current machine state with **Generate new MAC addresses for all network adapters**.
 - On each clone: `Rename-Computer -NewName WIN11-0X -Restart`, then `Add-Computer -DomainName nwane.local -Credential <admin account> -Restart`. All four joined and got leases from the DHCP scope.
 - `nslookup` on a client showed `Default Server: UnKnown` for 192.168.10.10. DNS had no reverse lookup zone, so the IP could not be mapped back to a name. I created an Active Directory-integrated reverse zone for 192.168.10.0/24 (`10.168.192.in-addr.arpa`, replicated to all DNS servers in the domain, secure dynamic updates only) and ran `ipconfig /registerdns` on DC01. After that, `nslookup DC01.nwane.local` and `nslookup 192.168.10.10` both return `DC01.nwane.local` at 192.168.10.10.
+- Re-ran `dcdiag` after the boot-time events aged out. Every test passed, including SystemLog and DFSREvent, which failed on 11-14. DFSREvent and SystemLog still print warning text (SYSVOL-share events from the first boots, and an unexpected-shutdown entry from powering the VM off without a clean shutdown) but report passed. Enterprise tests on `nwane.local` (LocatorCheck, Intersite) and all partition tests passed. Going forward I shut DC01 down from inside Windows.
 
 ## Windows 11 client
 
@@ -90,7 +91,7 @@ Notes:
 | Domain info | `Get-ADDomain` | Pass: nwane.local, NetBIOS NWANE, Windows2025Domain mode |
 | Services | `Get-Service NTDS, DNS, Netlogon, KDC` | Pass: running |
 | OS edition | `(Get-CimInstance Win32_OperatingSystem).Caption` | Windows Server 2025 Standard Evaluation |
-| Domain controller health | `dcdiag` | Pass except SystemLog and DFSREvent (boot-time log warnings, see 2026-11-14) |
+| Domain controller health | `dcdiag` | Pass on all tests as of 2026-11-15 (SystemLog and DFSREvent failed on 2026-11-14 from boot-time log events) |
 | Named admin | `whoami /groups` as `rickky.adm` | Pass: member of Domain Admins |
 | Built-in Administrator | `Get-ADUser Administrator \| Select Name, Enabled` | Pass: Enabled False |
 | DHCP server in AD | `Get-DhcpServerInDC` | Pass: dc01.nwane.local at 192.168.10.10 |
@@ -108,7 +109,6 @@ Notes:
 | Forward DNS | `nslookup DC01.nwane.local` | Pass: 192.168.10.10 only |
 
 ## Open items
-- Re-run `dcdiag` after a day and record whether SystemLog and DFSREvent come back clean.
 - Check reverse lookups from every client, not just one.
 - Take snapshots of DC01 and WIN11-01 at this known-good state.
 
@@ -121,3 +121,4 @@ Notes:
 | [client-nslookup-before.png](screenshots/client-nslookup-before.png) | Client check: domain sign-in, `nwane.local`, and `nslookup` showing "UnKnown" before the reverse zone |
 | [nslookup-name-after.png](screenshots/nslookup-name-after.png) | `nslookup DC01.nwane.local` after the fix |
 | [nslookup-reverse-after.png](screenshots/nslookup-reverse-after.png) | `nslookup 192.168.10.10` after the fix |
+| [dcdiag-1.png](screenshots/dcdiag-1.png), [dcdiag-2.png](screenshots/dcdiag-2.png), [dcdiag-3.png](screenshots/dcdiag-3.png) | `dcdiag` on 2026-11-15: all tests passed |
