@@ -121,4 +121,7 @@ Notes:
 | [client-nslookup-before.png](screenshots/client-nslookup-before.png) | Client check: domain sign-in, `nwane.local`, and `nslookup` showing "UnKnown" before the reverse zone |
 | [nslookup-name-after.png](screenshots/nslookup-name-after.png) | `nslookup DC01.nwane.local` after the fix |
 | [nslookup-reverse-after.png](screenshots/nslookup-reverse-after.png) | `nslookup 192.168.10.10` after the fix |
+| [reverse-zone-wizard.png](screenshots/reverse-zone-wizard.png) | New Zone Wizard, replication scope for the reverse lookup zone |
+| [reverse-zone-and-registerdns.png](screenshots/reverse-zone-and-registerdns.png) | `10.168.192.in-addr.arpa` zone in DNS Manager, and `ipconfig /registerdns` on DC01 |
+| [vm-clone-dialog.jpg](screenshots/vm-clone-dialog.jpg) | VirtualBox clone dialog (Full Clone, generate new MAC addresses) |
 | [dcdiag-1.png](screenshots/dcdiag-1.png), [dcdiag-2.png](screenshots/dcdiag-2.png), [dcdiag-3.png](screenshots/dcdiag-3.png) | `dcdiag` on 2026-11-15: all tests passed |
