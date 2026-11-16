@@ -9,7 +9,7 @@
 - Hypervisor: Oracle VirtualBox (this repo's Hyper-V script is not used for this track)
 - Host: Windows 11
 - DC01: `winserver25_gui`, Windows Server 2025 Standard Evaluation (Desktop Experience), 4 GB RAM, 3 vCPU, 60 GB dynamic VDI
-- Client: Windows 11 Pro VM (computer name `WIN11-01`)
+- Clients: five Windows 11 Pro VMs, `WIN11-01` to `WIN11-05`
 
 ## Network plan
 
@@ -34,6 +34,8 @@ Adapter 1 is NAT for internet. Adapter 2 is an Internal Network named `labnet` f
 | 5 | Verify AD, DNS, DHCP (see below) | Done |
 | 6 | Build and join Windows 11 client | Done |
 | 7 | Named domain admin, disable built-in Administrator | Done |
+| 8 | Clone the client and join four more (`WIN11-02` to `WIN11-05`) | Done |
+| 9 | Reverse lookup zone and PTR record for DC01 | Done |
 
 ## Log
 
@@ -52,6 +54,11 @@ Adapter 1 is NAT for internet. Adapter 2 is an Internal Network named `labnet` f
 - Pointed DC01's time source at `time.windows.com` with `w32tm /config /manualpeerlist:"time.windows.com" /syncfromflags:manual /reliable:yes /update`, then restarted the Windows Time service. This clears the NtpClient warning.
 - Created the named admin `rickky.adm` (Ricky Admin) with `New-ADUser` and added it to Domain Admins. Signed in with it on DC01 and on WIN11-01, then disabled the built-in Administrator (`Enabled: False`). The first `New-ADUser` attempt failed on a typo in the `-UserPrincipalName` parameter name, so nothing was created until the retry.
 - The AD cmdlets (`Get-ADUser` and the rest) only exist on DC01. On the client they fail with "not recognized" until RSAT is installed.
+
+### 2026-11-15
+- Built the other four clients by cloning a freshly installed Windows 11 VM that had only the local account name and the `labnet` adapter configured. The source VM was fully shut down first. Each clone was a Full Clone of the current machine state with **Generate new MAC addresses for all network adapters**.
+- On each clone: `Rename-Computer -NewName WIN11-0X -Restart`, then `Add-Computer -DomainName nwane.local -Credential <admin account> -Restart`. All four joined and got leases from the DHCP scope.
+- `nslookup` on a client showed `Default Server: UnKnown` for 192.168.10.10. DNS had no reverse lookup zone, so the IP could not be mapped back to a name. I created an Active Directory-integrated reverse zone for 192.168.10.0/24 (`10.168.192.in-addr.arpa`, replicated to all DNS servers in the domain, secure dynamic updates only) and ran `ipconfig /registerdns` on DC01. After that, `nslookup DC01.nwane.local` and `nslookup 192.168.10.10` both return `DC01.nwane.local` at 192.168.10.10.
 
 ## Windows 11 client
 
@@ -95,8 +102,22 @@ Notes:
 | Domain sign-in | `whoami` on the client | Pass: nwane\administrator |
 | DC locator | `nltest /dsgetdc:nwane.local` | Pass: DC01.nwane.local at 192.168.10.10, flags include PDC GC DS KDC TIMESERV WRITABLE |
 | Computer object | Active Directory Users and Computers > Computers | Pass: WIN11-01 listed |
+| All clients in AD | Active Directory Users and Computers > Computers | Pass: WIN11-01 to WIN11-05 listed |
+| All client leases | `Get-DhcpServerv4Lease -ScopeId 192.168.10.0` | Pass: five active leases, 192.168.10.101 to .105, 8-day expiry |
+| Reverse DNS | `nslookup 192.168.10.10` | Pass: DC01.nwane.local (was "UnKnown" before the reverse zone) |
+| Forward DNS | `nslookup DC01.nwane.local` | Pass: 192.168.10.10 only |
 
 ## Open items
 - Re-run `dcdiag` after a day and record whether SystemLog and DFSREvent come back clean.
-- Join more clients if the project needs more than one domain computer.
+- Check reverse lookups from every client, not just one.
 - Take snapshots of DC01 and WIN11-01 at this known-good state.
+
+## Screenshots
+
+| File | Shows |
+|---|---|
+| [ad-computers.png](screenshots/ad-computers.png) | WIN11-01 to WIN11-05 under Computers |
+| [dhcp-leases.png](screenshots/dhcp-leases.png) | Five active leases with `nwane.local` hostnames |
+| [client-nslookup-before.png](screenshots/client-nslookup-before.png) | Client check: domain sign-in, `nwane.local`, and `nslookup` showing "UnKnown" before the reverse zone |
+| [nslookup-name-after.png](screenshots/nslookup-name-after.png) | `nslookup DC01.nwane.local` after the fix |
+| [nslookup-reverse-after.png](screenshots/nslookup-reverse-after.png) | `nslookup 192.168.10.10` after the fix |

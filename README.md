@@ -6,13 +6,13 @@ Everything here is meant to be reproducible: scripts to build the lab, notes on 
 
 ## Lab tracks
 
-| # | Track | Topics |
-|---|-------|--------|
-| 01 | [Install and baseline](labs/01-install-and-baseline) | Evaluation ISO, VM creation, Server Core vs Desktop Experience, initial config |
-| 02 | [Active Directory](labs/02-active-directory) | AD DS, domain join, GPO, new 2025 features (e.g. 32k database page size, DC-level improvements) |
-| 03 | [Networking, DNS, DHCP](labs/03-networking-dns-dhcp) | DNS, DHCP, SMB over QUIC, networking changes in 2025 |
-| 04 | [Hyper-V and containers](labs/04-hyper-v-and-containers) | Nested virtualization, Hyper-V, Windows containers, GPU partitioning |
-| 05 | [Security hardening](labs/05-security-hardening) | Baselines, Defender, Credential Guard, delegated managed service accounts (dMSA) |
+| # | Track | Topics | Status |
+|---|-------|--------|--------|
+| 01 | [Install and baseline](labs/01-install-and-baseline) | Evaluation ISO, VM creation, Server Core vs Desktop Experience, initial config | In progress |
+| 02 | [Active Directory](labs/02-active-directory) | AD DS, domain join, GPO, new 2025 features (e.g. 32k database page size, DC-level improvements) | Done (domain, DHCP, 5 joined clients, DNS); GPO not started |
+| 03 | [Networking, DNS, DHCP](labs/03-networking-dns-dhcp) | DNS, DHCP, SMB over QUIC, networking changes in 2025 | Planned |
+| 04 | [Hyper-V and containers](labs/04-hyper-v-and-containers) | Nested virtualization, Hyper-V, Windows containers, GPU partitioning | Planned |
+| 05 | [Security hardening](labs/05-security-hardening) | Baselines, Defender, Credential Guard, delegated managed service accounts (dMSA) | Planned |
 
 ## Repo layout
 
@@ -25,7 +25,7 @@ notes/    Scratch notes and things learned
 
 ## Requirements
 
-- Windows 11 Pro/Enterprise host with Hyper-V enabled (or any hypervisor you prefer)
+- A host that can run several VMs (Lab 02 runs on VirtualBox; any hypervisor works)
 - Windows Server 2025 evaluation ISO (180-day, from the Microsoft Evaluation Center)
 - PowerShell 7+
 
